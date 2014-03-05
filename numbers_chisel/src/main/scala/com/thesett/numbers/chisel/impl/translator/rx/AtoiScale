@@ -1,0 +1,8 @@
+package com.thesett.numbers.chisel.impl.translator.rx
+
+import Chisel._
+
+object AtoiScale
+{
+  def apply (power: Int)(digit: UInt) = UInt(power) * digit
+}

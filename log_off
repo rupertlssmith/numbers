@@ -1,0 +1,16 @@
+#!/bin/sh
+find . -name '*.java' -exec sed -i -e '
+s/private static final java\.util\.logging\.Logger log = java\.util\.logging\.Logger\.getLogger(\(.*\));/\/* private static final Logger log = Logger.getLogger(\1); *\//
+/private static final java\.util\.logging\.Logger log =/{
+/\/\*/!{
+N
+s/private static final java\.util\.logging\.Logger log =.* java\.util\.logging\.Logger\.getLogger(\(.*\));/\/* private static final Logger log = Logger.getLogger(\1); *\//
+}
+}
+/\/\*/! s/\(log\.fine.*;\)/\/*\1*\//
+/log\.fine/{
+/\/\*/!{
+N
+s/\(log\.fine.*;\)/\/*\1*\//
+}
+}' {} \;
