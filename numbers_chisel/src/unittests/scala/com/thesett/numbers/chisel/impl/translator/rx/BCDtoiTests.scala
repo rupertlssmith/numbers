@@ -16,12 +16,8 @@ with Matchers with NoShrinkVariants
 {
   def trace = false
 
-  class DummyTests(c: BCDtoi) extends Tester(c, Array(c.io))
+  class DummyTests(c: BCDtoi) extends Tester(c, isTrace = trace)
   {
-    defTests
-    {
-      true
-    }
   }
 
   val (c, t) =
@@ -35,12 +31,12 @@ with Matchers with NoShrinkVariants
 
   override def beforeAll()
   {
-    testProcess = t.startTest
+    testProcess = t.startTesting()
   }
 
   override def afterAll()
   {
-    t.endTest(testProcess)
+    t.endTesting()
   }
 
   val examples =
@@ -72,7 +68,14 @@ with Matchers with NoShrinkVariants
       vars(c.io.bcd(3)) = UInt(d3)
       vars(c.io.out) = UInt(o)
 
-      t.step(vars, isTrace = trace) should be(true)
+      t.poke(c.io.bcd(0), d0)
+      t.poke(c.io.bcd(1), d1)
+      t.poke(c.io.bcd(2), d2)
+      t.poke(c.io.bcd(3), d3)
+
+      t.step(1)
+
+      t.expect(c.io.out, o)
     }
   }
 

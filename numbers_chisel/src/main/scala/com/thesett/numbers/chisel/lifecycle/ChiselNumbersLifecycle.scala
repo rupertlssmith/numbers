@@ -29,11 +29,8 @@ import com.thesett.numbers.chisel.impl.factory.NumbersFactoryChiselImpl
 class ChiselNumbersLifecycle(trace: Boolean = false) extends StartStopLifecycleBase
 with ChiselModuleProvider with RxTopWrapper
 {
-
-  class DummyTests(c: RxTop) extends Tester(c, Array(c.io))
+  class DummyTests(c: RxTop) extends Tester(c, isTrace = trace)
   {
-    defTests
-    { true }
   }
 
   val (c, t) =
@@ -72,7 +69,8 @@ with ChiselModuleProvider with RxTopWrapper
     vars(c.io.in) = UInt(in)
     vars(c.io.inEnable) = Bool(inEnable)
 
-    t.step(vars, ovars, isTrace = trace)
+    t.poke(c.io.in, in)
+    t.poke(c.io.inEnable, if(inEnable) 1 else 0)
 
     (ovars(c.io.rdy).litValue().toInt == 1,
       ovars(c.io.tagOut).litValue().toInt,
@@ -85,14 +83,14 @@ with ChiselModuleProvider with RxTopWrapper
 
   def start() =
   {
-    testProcess = t.startTest
+    testProcess = t.startTesting
 
     running()
   }
 
   override def shutdown()
   {
-    t.endTest(testProcess)
+    t.endTesting()//(testProcess)
 
     terminated()
   }

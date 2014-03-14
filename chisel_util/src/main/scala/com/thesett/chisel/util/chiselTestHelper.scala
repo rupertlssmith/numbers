@@ -15,42 +15,44 @@ object chiselTestHelper
   def apply[T <: Module](args: Array[String], gen: () => T, scanner: T => TestIO = null, printer: T => TestIO = null)
                         (ftester: T => Tester[T]): (T, Tester[Module]) =
   {
-    Module.initChisel()
+    Module.initChisel();
     chiselMain.readArgs(args)
 
     try
     {
-      val c = gen()
+      /* JACK - If loading design, read design.prm file*/
+      if (Module.jackLoad != null)
+      {Jackhammer.load(Module.jackDir, Module.jackLoad) }
+      val c = gen();
 
-      if (scanner != null)
+      /* JACK - If dumping design, dump to jackDir with jackNumber points*/
+      if (Module.jackDump != null)
       {
-        val s = scanner(c)
-        Module.scanArgs ++= s.args
-        for (a <- s.args) a.isScanArg = true
-        Module.scanFormat = s.format
-      }
-
-      if (printer != null)
+        Jackhammer.dump(Module.jackDir, Module.jackDump)
+      } else
       {
-        val p = printer(c)
-        Module.printArgs ++= p.args
-        for (a <- p.args) a.isPrintArg = true
-        Module.printFormat = p.format
+        Module.backend.elaborate(c)
       }
-
-      if (ftester != null)
-      {
-        Module.tester = ftester(c)
-      }
-
-      Module.backend.elaborate(c)
-
       if (Module.isCheckingPorts) Module.backend.checkPorts(c)
       if (Module.isCompiling && Module.isGenHarness) Module.backend.compile(c)
+      var tester: Tester[T] = null
+      if (ftester != null && !Module.backend.isInstanceOf[VerilogBackend])
+      {
+        var res = false
 
-      (c, Module.tester)
-    }
-    finally
+        try
+        {
+          tester = ftester(c)
+        } finally
+        {
+          if (tester != null && tester.process != null)
+            res = tester.endTesting()
+        }
+        println(if (res) "PASSED" else "*** FAILED ***")
+        if (!res) throwException("Module under test FAILED at least one test vector.")
+      }
+      (c, tester)
+    } finally
     {
       ChiselError.report()
     }
