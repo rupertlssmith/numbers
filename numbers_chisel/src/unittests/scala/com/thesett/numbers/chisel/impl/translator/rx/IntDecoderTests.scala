@@ -11,7 +11,6 @@ import scala.Array
 import com.thesett.chisel.util.chiselTestHelper
 import org.scalatest.prop.nsv.NoShrinkVariants
 
-@Ignore
 class IntDecoderTests extends PropSpec
 with BeforeAndAfterAll with TableDrivenPropertyChecks with GeneratorDrivenPropertyChecks
 with Matchers with Checkers with NoShrinkVariants
@@ -74,24 +73,20 @@ with Matchers with Checkers with NoShrinkVariants
   {
     (d0, d1, d2, d3, end, next, count, rdy, out) =>
     {
-      val vars = new mutable.HashMap[Node, Node]()
-      val ovars = new mutable.HashMap[Node, Node]()
+      t.poke(c.io.in.bcdAndFlags(0).bcd, d0)
+      t.poke(c.io.in.bcdAndFlags(1).bcd, d1)
+      t.poke(c.io.in.bcdAndFlags(2).bcd, d2)
+      t.poke(c.io.in.bcdAndFlags(3).bcd, d3)
+      t.poke(c.io.in.endMarker, if(end) 1 else 0)
+      t.poke(c.io.in.nextAfterEnd, if(next) 1 else 0)
+      t.poke(c.io.in.count, count)
 
-      vars(c.io.in.bcdAndFlags(0).bcd) = UInt(d0)
-      vars(c.io.in.bcdAndFlags(1).bcd) = UInt(d1)
-      vars(c.io.in.bcdAndFlags(2).bcd) = UInt(d2)
-      vars(c.io.in.bcdAndFlags(3).bcd) = UInt(d3)
-      vars(c.io.in.endMarker) = Bool(end)
-      vars(c.io.in.nextAfterEnd) = Bool(next)
-      vars(c.io.in.count) = UInt(count)
+      t.step(1)
 
-      ovars(c.io.rdy) = Bool(rdy)
-      ovars(c.io.out) = UInt(out)
-
-      //t.step(vars, ovars, isTrace = trace) should be(true)
-
-      ovars(c.io.rdy).litValue() == 1 should be(rdy)
-      ovars(c.io.out).litValue() should be(out)
+      t.expect(c.io.rdy, if (rdy) 1 else 0)
+      t.expect(c.io.out, out)
+      t.expect(c.io.rdy, if (rdy) 1 else 0)
+      t.expect(c.io.out, out)
     }
   }
 

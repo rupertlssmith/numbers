@@ -10,7 +10,6 @@ import scala.util.Random
 import org.scalacheck.Test.Parameters.Default
 import com.thesett.chisel.util.chiselTestHelper
 
-@Ignore
 class PairerTests extends PropSpec
 with BeforeAndAfterAll with TableDrivenPropertyChecks with GeneratorDrivenPropertyChecks with Matchers with Checkers
 {
@@ -52,23 +51,17 @@ with BeforeAndAfterAll with TableDrivenPropertyChecks with GeneratorDrivenProper
   {
     (tagIn, tagRdy, valIn, valRdy, reset, tagOut, valOut, rdy) =>
     {
-      val vars = new mutable.HashMap[Node, Node]()
-      val ovars = new mutable.HashMap[Node, Node]()
+      t.poke(c.io.tagIn, tagIn)
+      t.poke(c.io.tagRdy, if(tagRdy) 1 else 0)
+      t.poke(c.io.valIn, valIn)
+      t.poke(c.io.valRdy, if(valRdy) 1 else 0)
+      t.poke(c.io.reset, if(reset) 1 else 0)
 
-      vars(c.io.tagIn) = UInt(tagIn)
-      vars(c.io.tagRdy) = Bool(tagRdy)
-      vars(c.io.valIn) = UInt(valIn)
-      vars(c.io.valRdy) = Bool(valRdy)
-      vars(c.io.reset) = Bool(reset)
+      t.step(1)
 
-      //t.step(vars, ovars, isTrace = trace) should be(true)
-
-      /*System.out.println(tagIn, tagRdy, valIn, valRdy, reset, tagOut, valOut, rdy, "( ",
-        ovars(c.io.tagOut).litValue(), ovars(c.io.valOut).litValue(), ovars(c.io.rdy).litValue(), " )")*/
-
-      ovars(c.io.tagOut).litValue() should be(tagOut)
-      ovars(c.io.valOut).litValue() should be(valOut)
-      ovars(c.io.rdy).litValue() == 1 should be(rdy)
+      t.expect(c.io.tagOut, tagOut)
+      t.expect(c.io.valOut, valOut)
+      t.expect(c.io.rdy, if(rdy) 1 else 0)
     }
   }
 

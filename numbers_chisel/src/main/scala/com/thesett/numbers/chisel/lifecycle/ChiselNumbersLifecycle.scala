@@ -63,22 +63,18 @@ with ChiselModuleProvider with RxTopWrapper
    */
   def step(in: Int, inEnable: Boolean): (Boolean, Int, Int, Boolean, Int, Boolean) =
   {
-    val vars = new mutable.HashMap[Node, Node]()
-    val ovars = new mutable.HashMap[Node, Node]()
-
-    vars(c.io.in) = UInt(in)
-    vars(c.io.inEnable) = Bool(inEnable)
-
     t.poke(c.io.in, in)
     t.poke(c.io.inEnable, if(inEnable) 1 else 0)
 
-    (ovars(c.io.rdy).litValue().toInt == 1,
-      ovars(c.io.tagOut).litValue().toInt,
-      ovars(c.io.valOut).litValue().toInt,
-      ovars(c.io.seqNoRdy).litValue().toInt == 1,
-      ovars(c.io.seqNo).litValue().toInt,
-      ovars(c.io.eomRdy).litValue().toInt == 1
-      )
+    t.step(1)
+
+    (t.peek(c.io.rdy).intValue() == 1,
+     t.peek(c.io.tagOut).intValue(),
+     t.peek(c.io.valOut).intValue(),
+     t.peek(c.io.seqNoRdy).intValue() == 1,
+     t.peek(c.io.seqNo).intValue(),
+     t.peek(c.io.eomRdy).intValue() == 1
+     )
   }
 
   def start() =

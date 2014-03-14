@@ -10,7 +10,6 @@ import com.thesett.chisel.util.chiselTestHelper
 import scala.util.Random
 import org.scalatest.prop.nsv.NoShrinkVariants
 
-@Ignore
 class ChunkerTests extends PropSpec
 with BeforeAndAfterAll with TableDrivenPropertyChecks
 with GeneratorDrivenPropertyChecks with Matchers with Checkers with NoShrinkVariants
@@ -53,18 +52,13 @@ with GeneratorDrivenPropertyChecks with Matchers with Checkers with NoShrinkVari
    */
   def checkInOut(in: Int, inEnable: Boolean, error: Boolean, eom: Boolean) =
   {
-    val vars = new mutable.HashMap[Node, Node]()
-    val ovars = new mutable.HashMap[Node, Node]()
+    t.poke(c.io.in, in)
+    t.poke(c.io.inEnable, if (inEnable) 1 else 0)
 
-    vars(c.io.in) = UInt(in)
-    vars(c.io.inEnable) = Bool(inEnable)
+    t.step(1)
 
-    //System.out.println(in, noInput, error)
-
-    //t.step(vars, ovars, isTrace = trace) should be(true)
-
-    ovars(c.io.error).litValue().toInt == 1 should be(error)
-    ovars(c.io.eom).litValue().toInt == 1 should be(eom)
+    t.expect(c.io.error, if (error) 1 else 0)
+    t.expect(c.io.eom, if (eom) 1 else 0)
   }
 
   val illegalInputs = Array(3, 6, 7, 11, 12, 13, 14, 15)

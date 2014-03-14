@@ -10,7 +10,6 @@ import scala.sys.process.Process
 import com.thesett.chisel.util.chiselTestHelper
 import org.scalatest.prop.nsv.NoShrinkVariants
 
-@Ignore
 class AtoiSubtractAndRangeTests(ignore: String) extends PropSpec
 with BeforeAndAfterAll with TableDrivenPropertyChecks with Matchers
 {
@@ -76,11 +75,12 @@ with BeforeAndAfterAll with TableDrivenPropertyChecks with Matchers
     {
       val vars = new mutable.HashMap[Node, Node]()
 
-      vars(c.io.ascii) = UInt(a, 8)
-      vars(c.io.out.flags) = f
-      vars(c.io.out.bcd) = UInt(b)
+      t.poke(c.io.ascii, a)
 
-      //t.step(vars, isTrace = trace) should be(true)
+      t.step(1)
+
+      t.expect(c.io.out.flags, f.litValue())
+      t.expect(c.io.out.bcd, b)
     }
   }
 
