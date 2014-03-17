@@ -122,18 +122,18 @@ with ChiselModuleProvider with RxTopWrapper
 
       if (seqRdy)
       {
-        System.out.println("stepFrame: Got sequence number - " + seqNo)
+        //System.out.println("stepFrame: Got sequence number - " + seqNo)
         headerBuilder.setSequenceNo(seqNo)
       }
 
       if(eomRdy)
       {
-        System.out.println("stepFrame: Got EOM")
+        //System.out.println("stepFrame: Got EOM")
         return (!FrameReaderUtil.hasNextWord(frame), true)
       }
     }
 
-    System.out.println("stepFrame: Consumed frame, but did not get EOM");
+    //System.out.println("stepFrame: Consumed frame, but did not get EOM");
     (true, false)
   }
 
